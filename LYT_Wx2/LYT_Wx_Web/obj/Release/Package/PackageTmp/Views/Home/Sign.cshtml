@@ -1,0 +1,563 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=XFZkTyTrjz7CIjGEa3ACMrhDRVZZo4m1"></script>
+<script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp"></script>
+
+<script src="~/Scripts/gpshelper.js"></script>
+
+<script src="~/Scripts/comm.js"></script>
+<script src="~/Scripts/jquery-1.8.2.min.js"></script>
+<link href="~/Content/Style.css" rel="stylesheet" />
+<link rel="stylesheet" href="~/Content/weui.css" />
+<link href="~/Content/example.css" rel="stylesheet" />
+
+<div class="weui_dialog_confirm" id="weui_dialog_confirm" style="display: none;">
+    <div class="weui_mask"></div>
+    <div class="weui_dialog">
+        <div class="weui_dialog_hd"><strong class="weui_dialog_title">单号重复</strong></div>
+        <div class="weui_dialog_bd">该单号已存在签收记录是否继续上传?</div>
+        <div class="weui_dialog_ft">
+            <a href="javascript:quxiao();" class="weui_btn_dialog default">取消</a>
+            <a href="javascript:queding();" class="weui_btn_dialog primary">确定</a>
+        </div>
+    </div>
+</div>
+
+
+<div class="weui_dialog_alert" id="dialog_div" style="display: none;">
+    <div class="weui_mask"></div>
+    <div class="weui_dialog">
+        <div class="weui_dialog_hd"><i class="weui_icon_warn"></i>&nbsp;<strong class="weui_dialog_title">请填写或扫描单号！</strong></div>
+        <!--          <div class="weui_dialog_bd"></div>  -->
+        <div class="weui_dialog_ft">
+            <a href="javascript:closeDialogDiv();" class="weui_btn_dialog primary">确定</a>
+        </div>
+    </div>
+</div>
+
+<div class="weui_dialog_alert" id="dialog_div1" style="display: none;">
+    <div class="weui_mask"></div>
+    <div class="weui_dialog">
+        <div class="weui_dialog_hd"><i class="weui_icon_warn"></i>&nbsp;<strong class="weui_dialog_title">请正确填写八位或九位单号！</strong></div>
+        <!--          <div class="weui_dialog_bd"></div>  -->
+        <div class="weui_dialog_ft">
+            <a href="javascript:closeDialogDiv1();" class="weui_btn_dialog primary">确定</a>
+        </div>
+    </div>
+</div>
+
+<div class="weui_dialog_alert" id="dialog_div2" style="display: none;">
+    <div class="weui_mask"></div>
+    <div class="weui_dialog">
+        <div class="weui_dialog_hd">
+            <i class=" "></i>
+            &nbsp;<strong class="weui_dialog_title">签收成功</strong>
+        </div>
+        <!--          <div class="weui_dialog_bd"></div>  -->
+        <div class="weui_dialog_ft">
+            <a href="javascript:closeDialogDiv2();" class="weui_btn_dialog primary">确定</a>
+        </div>
+    </div>
+</div>
+
+<div class="weui_dialog_alert" id="dialog_div3" style="display: none;">
+    <div class="weui_mask"></div>
+    <div class="weui_dialog">
+        <div class="weui_dialog_hd"><i class="weui_icon_warn"></i>&nbsp;<strong class="weui_dialog_title">请上传签收照片！</strong></div>
+        <!--          <div class="weui_dialog_bd"></div>  -->
+        <div class="weui_dialog_ft">
+            <a href="javascript:closeDialogDiv3();" class="weui_btn_dialog primary">确定</a>
+        </div>
+    </div>
+</div>
+
+
+<form action="/ShippersWeChart/WeChart/saveSignature" name="formName" id="formName" method="post">
+    <div class="weui_cells_title">录入签收单信息</div>
+    <div class="weui_cells weui_cells_form">
+        <div class="weui_cell">
+            <div class="weui_cell_hd"><label class="weui_label">单  号</label></div>
+            <div class="weui_cell_bd weui_cell_primary">
+                <input class="weui_input" id="barCode" name="oddNum" type="number" pattern="[0-9]*" placeholder="输入单号或点击扫描按钮" />
+
+            </div>
+            <div class="weui_cell_ft">
+                <a href="javascript:saoyisaoLYT();" class="weui_btn weui_btn_mini weui_btn_primary">扫描</a>
+            </div>
+        </div>
+        @*<div class="weui_cell">
+                <div class="weui_cell_hd"><label class="weui_label">地  址</label></div>
+                <div class="weui_cell_bd weui_cell_primary">
+                    <input class="weui_input" id="address" name="address" placeholder="请打开手机定位服务" readonly="readonly" />
+
+                </div>
+                <div class="weui_cell_ft">
+                    <a href="javascript:getAddressLYT();" class="weui_btn weui_btn_mini weui_btn_primary">定位</a>
+                </div>
+            </div>*@
+
+        <div class="weui_cell">
+            <div class="weui_cell_hd"><label class="weui_label">签收人</label></div>
+            <div class="weui_cell_bd weui_cell_primary">
+                <input class="weui_input" id="signPerson" name="signPerson" placeholder="请输入签收人姓名" />
+
+            </div>
+
+        </div>
+    </div>
+
+    <div class="weui_cells_title">签收状态</div>
+    <div class="weui_sig">
+        <div id="sel_left" class="weui_flex_item left" onclick="chek_Sign(this,1)"><div class="placeholder">正常签收</div></div>
+        <div id="sel_right" class="weui_flex_item " onclick="chek_Sign(this,2)"><div class="placeholder">异常签收</div></div>
+    </div>
+
+
+
+    <div class="weui_cells_title">拍照上传</div>
+    <div class="weui_cells weui_cells_form">
+        <div class="weui_cell">
+            <div class="weui_cell_bd weui_cell_primary">
+                <div class="weui_uploader">
+                    <div class="weui_uploader_hd weui_cell">
+                        <div class="weui_cell_bd weui_cell_primary">附件预览</div>
+                        <div class="weui_cell_ft"><span id="spanNum">0</span>/5</div>
+
+                    </div>
+                    <div class="weui_uploader_bd">
+                        <ul class="weui_uploader_files">
+
+                            <li class="weui_uploader_file" id="img1"><img width="83" src="~/Content/imgs/Addimg.png" onclick="UploadImg(this)" /></li>
+                            <li class="weui_uploader_file" id="img2"><img width="83" src="~/Content/imgs/Addimg.png" onclick="UploadImg(this)" /></li>
+                            <li class="weui_uploader_file" id="img3"><img width="83" src="~/Content/imgs/Addimg.png" onclick="UploadImg(this)" /></li>
+                            <li class="weui_uploader_file" id="img4"><img width="83" src="~/Content/imgs/Addimg.png" onclick="UploadImg(this)" /></li>
+                            <li class="weui_uploader_file" id="img5"><img width="83" src="~/Content/imgs/Addimg.png" onclick="UploadImg(this)" /></li>
+                        </ul>
+
+                        @*<div class="weui_uploader_input_wrp" onclick="UploadImg()">
+
+                                <input type="file" accept="image/*" onchange="SaveImg(this)" id="Uploads" style="display: none;" />
+
+                            </div>*@
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="weui_opr_area">
+        <p class="weui_btn_area">
+            <a href="javascript:qianshouCheck();" id="qianshous" class="weui_btn weui_btn_primary">签收</a>
+        </p>
+    </div>
+    <div id="imgPanel" class="none">
+        <div id="imgCut"><em></em></div>
+        <a onclick="SaveImg()">完成</a>
+    </div>
+</form>
+<form id="frm" class="none">
+    <input type="file" accept="image/*" onchange="GetImgUrl(this)" id="Uploads" name="file1" />
+</form>
+<form id="uploadForm" class="none"></form>
+<script src="~/Scripts/zepto.min.js"></script>
+<script src="~/Scripts/Base64-Image_upload.js"></script>
+
+<script type="text/javascript">
+
+    var para = {
+        waybill: '',
+        address: '无法获取地址',
+        longitude: '',
+        latitude: '',
+        signtime: '',
+        openid: '',
+        signtype: '正常签收',
+        body: '',
+        signname: ''
+    };
+
+    function qianshouCheck() {
+        var barCode = $('#barCode').val() + "";
+
+        qianshou();
+    }
+
+
+    function qianshou() {
+        para.waybill = $('#barCode').val();
+        var hiden = $('#mdeiaIds1').val();
+        para.address = $("#address").val();
+        para.signname = $("#signPerson").val();
+        para.openid = UserToken;
+        var imgls = document.getElementsByClassName("weui_uploader_file")
+        var arr_imgs = new Array();
+        for (var i = 0; i < imgls.length; i++) {
+            if (imgls[i].getAttribute("data_img") != null) {
+                var _curl = imgls[i].getAttribute("data_img")
+                arr_imgs.push({ picurl: _curl });
+            }
+        }
+        para.body = JSON.stringify(arr_imgs);
+
+        if (String(para.waybill).isNullOrEmpty()) {
+            $('#dialog_div').css('display', 'block'); //提示框 请填写单号
+            return;
+        }
+        else if (String(para.address).isNullOrEmpty()) {
+            ShowDialog('请点击定位获取地址!');//提示框 请点击定位获取地址
+            return;
+        }
+        else if (String(para.signname).isNullOrEmpty()) {
+            ShowDialog('请填写签收人!');//提示框 请点击定位获取地址
+            return;
+        }
+        else if (arr_imgs.length <= 0) {
+            ShowDialog('请上传附件信息!');//提示框 请点击定位获取地址
+            return;
+        }
+        else {
+            para.signtime = new Date().ToString("yyyy.MM.dd HH:mm:ss");
+
+            GetDit();
+
+        }
+        //else if (checkImage()) {
+        //    ShowDialog('请上传附件信息!');//提示框 请点击定位获取地址
+        //    return;
+        //}
+
+    }
+
+    function GetDit() {
+
+        $.ajax({
+            type: 'POST',
+            url: '/WeiXinAPI/GetDigest',
+            data: { plainMessage: JSON.stringify(para) },
+            dataType: 'text',
+            success: function (data, textStatus) {
+                if (data.length > 0) {
+                    SubmitData(data);
+                }
+            },
+            error: function (xmlHttpRequest, textStatus, errorThrown) {
+                Message.Box("\u7f51\u7edc\u9519\u8bef：" + xmlHttpRequest.status);
+            }
+        });
+    }
+
+    function SubmitData() {
+
+        var dig = arguments[0];
+        var _Url = Net_url + "/openapi/guanglianPdaApi";
+        var postData = {
+            command: 'WXARRIVESIGN',
+            Params: JSON.stringify(para),
+            digest: dig,
+            Timestamp: new Date().ToString("yyyy.MM.dd HH:mm:ss")
+        };
+
+        Message.Loading();
+        AJAXData(_Url, postData,
+       function (data) {
+           if (data.error_code == 0) {
+               Message.Remove();
+               Message.Box("签收成功", function () {
+                   Redirect('/Home/Sign');
+               });
+               location.reload()
+
+           } else if (data.error_code == 10001) {
+               Message.Box(data.error_msg + "提交失败!");
+           }
+       });
+
+    }
+
+    function checkImage() {
+        var img_items = document.getElementsByClassName("weui_uploader_file");
+        var flag = false;
+        for (var i = 0; i < img_items.length; i++) {
+            if (img_items[i].getAttribute("style") != "display: none;") {
+                flag = true;
+            }
+        }
+        return flag;
+    }
+
+
+    function checkNum(oddNum) {
+        var hids = $("input[name='numLists']");
+        for (var n = 0; n < hids.length; n++) {
+            if (hids[n].value == oddNum) {
+                $('#weui_dialog_confirm').css('display', 'block');
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function quxiao() {
+        $('#weui_dialog_confirm').css('display', 'none');
+
+    }
+
+    function queding() {
+        $('#weui_dialog_confirm').css('display', 'none');
+        qianshou();
+
+    }
+
+
+    function closeDialogDiv() {
+        $('#dialog_div').css('display', 'none');
+    }
+    function closeDialogDiv1() {
+        $('#dialog_div1').css('display', 'none');
+    }
+
+    function closeDialogDiv2() {
+        $('#dialog_div2').css('display', 'none');
+    }
+    function closeDialogDiv3() {
+        $('#dialog_div3').css('display', 'none');
+    }
+
+</script>
+
+
+<script type="text/javascript">
+
+    //获取位置信息
+    function getAddressLYT() {
+        wx.getLocation({
+            type: 'wgs84', // 默认为wgs84的gps坐标，如果要返回直接给openLocation用的火星坐标，可传入'gcj02'
+            success: function (res) {
+                var latitude = res.latitude; // 纬度，浮点数，范围为90 ~ -90
+                var longitude = res.longitude; // 经度，浮点数，范围为180 ~ -180。
+                para.longitude = longitude;
+                para.latitude = latitude;
+
+                var a = GPS.gcj_encrypt(latitude, longitude);
+
+                var b = GPS.bd_encrypt(a.lat, a.lon);
+                var map = new BMap.Map("allmap");
+                var point = new BMap.Point(b.lon, b.lat);
+                //  var point = new BMap.Point(longitude,latitude);
+                var gc = new BMap.Geocoder();
+                gc.getLocation(point, function (rs) {
+                    // alert(rs.address);
+                    $('#address').val(rs.address);        //获取用户地理位置
+                });
+
+
+            }
+        });
+
+    }
+
+    //扫一扫
+    function saoyisaoLYT() {
+
+        wx.scanQRCode({
+            needResult: 1, // 默认为0，扫描结果由微信处理，1则直接返回扫描结果，
+            scanType: ["barCode"], // 可以指定扫二维码还是一维码，默认二者都有
+            success: function (res) {
+                var result = res.resultStr.split(',')[1]; // 当needResult 为 1 时，扫码返回的结果
+
+                $('#barCode').val(result.substring(0, 9));
+            }
+        });
+
+    }
+    //腾讯地图
+    function abcqq(latitude, longitude) {
+
+        var geocoder = new qq.maps.Geocoder({
+            complete: function (result) {
+                //alert(result.detail.address+"--------------1");
+                //	$('#address').val(result.detail.address);
+                alert(result.detail.address + "--------------12");
+                alert(result.detail.location + "---1");
+            }
+        });
+        var latLng = new qq.maps.LatLng(latitude, longitude);
+        geocoder.getAddress(latLng);
+    }
+
+    var imgIndex = 1;
+    //function paizhangLYT() {
+    //    document.getElementById('Uploads').click();
+    //}
+    var ImgDom = null;
+    var ImgParent = null;
+    function UploadImg() {
+        ImgDom = arguments[0];
+        ImgParent = ImgDom.parentNode;
+        document.getElementById('Uploads').click();
+    }
+
+    function GetImgUrl() {
+        //获取图片dom
+        var Dom = arguments[0]
+        SetImgSrc();
+        var quality = 80;
+        var blob = URL.createObjectURL(Dom.files[0]) || webkitURL.createObjectURL(Dom.files[0]) || window.URL.createObjectURL(Dom.files[0]);
+        var MIME = Dom.files[0].type;
+        var img = new Image();
+        img.src = blob;
+        img.onload = function () {
+            var cvs = document.createElement('canvas');
+            var ctx = cvs.getContext('2d');
+            var W = 700;
+            cvs.width = W;
+            cvs.height = W / this.width * this.height;
+            ctx.drawImage(this, 0, 0, W, W / this.width * this.height);
+            var base64 = cvs.toDataURL(MIME, quality / 100);
+            UpImg(base64, MIME);
+        }
+
+
+
+        ////ImgDom.src = blob;
+        //ImgDom.src = getObjectURL(Dom.files[0])
+
+        $('#spanNum').html(imgIndex);
+        imgIndex++;
+    }
+    function SetImgSrc() {
+        if (typeof FileReader != 'undefined') {
+            var acceptedTypes = {
+                'image/png': true,
+                'image/jpeg': true,
+                'image/gif': true
+            };
+            if (acceptedTypes[document.getElementById('Uploads').files[0].type] === true) {
+                var reader = new FileReader();
+                reader.onload = function (event) {
+                    var image = new Image();
+                    image.src = event.target.result;
+                    image.width = 83;
+                    image.height = 83;
+                    var img_id = ImgDom.parentNode.appendChild(image);
+                    ImgDom.parentNode.removeChild(ImgDom.parentNode.childNodes[0])
+
+                };
+                reader.readAsDataURL(document.getElementById('Uploads').files[0]);
+            }
+        }
+    }
+
+    function getObjectURL(file) {
+        var url = null;
+        if (window.createObjectURL != undefined) { // basic
+            url = window.createObjectURL(file);
+        } else if (window.URL != undefined) { // mozilla(firefox)
+            url = window.URL.createObjectURL(file);
+        } else if (window.webkitURL != undefined) { // webkit or chrome
+            url = window.webkitURL.createObjectURL(file);
+        }
+        return url;
+    }
+     
+    function UpImg() {
+        var _data = arguments[0];
+        var _imgtype = arguments[1];
+        _data = _data.split(',')[1];
+        _data = window.atob(_data);
+        var ia = new Uint8Array(_data.length);
+        for (var i = 0; i < _data.length; i++) {
+            ia[i] = _data.charCodeAt(i);
+        }
+        var blob = new Blob([ia], {            //以上均为二进制参数处理，从而获取一个blob对象
+            type: _imgtype
+        });
+        //var fd = new FormData(document.getElementById("uploadForm"));
+        var fd = new FormData($("#uploadForm")[0]);
+        var imgname = new Date().ToString("yyyyMMddHHmmss") + "." + _imgtype.split('/')[1];
+        fd.append("file1", blob, imgname);    //向form中加入图片数据，name属性是XXX，文件名是upload.jpg
+        var xhr = new XMLHttpRequest();
+        //xhr.addEventListener('load', function (resUpload) {
+
+        //    var img_id = ImgParent.getAttribute("id");
+        //    document.getElementById(img_id).setAttribute("data_img", resUpload.currentTarget.response);
+        //    //请求成功
+        //}, false);
+        //xhr.addEventListener('error', function (resUpload) {
+        //    // _this.css("display", "");
+        //    //请求失败
+        //}, false);
+        //xhr.addEventListener('abort', function () {
+        //    //_this.css("display", "");
+        //    //上传终止
+        //}, false);
+
+        xhr.onreadystatechange = function (resUpload) {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                var img_id = ImgParent.getAttribute("id");
+                document.getElementById(img_id).setAttribute("data_img", resUpload.currentTarget.response);
+
+            }
+        }
+        xhr.open('POST', Net_url + "/openapi/fileUpload");//请求地址
+        xhr.send(fd);//发送
+
+        //var _Url = Net_url + "/openapi/fileUpload";
+        ////var formData = new FormData($("#frm")[0]);
+
+        //$.ajax({
+        //    url: _Url,
+        //    type: 'POST',
+        //    data: _data,
+        //    async: false,
+        //    cache: false,
+        //    contentType: false,
+        //    processData: false,
+        //    success: function (returndata) {
+        //        var img_id = ImgDom.parentNode.getAttribute("id");
+        //        document.getElementById(img_id).setAttribute("data_img", returndata);
+        //    },
+        //    error: function (returndata) {
+        //        alert(returndata);
+        //    }
+        //});
+    }
+
+
+
+
+
+
+
+    function ShowDialog() {
+        var content = arguments[0];
+        var _dom = document.getElementById("dialog_div");
+        _dom.setAttribute("style", "display: block;");
+        _dom.getElementsByTagName("strong")[0].innerHTML = content;
+
+    }
+
+    function closeImg() {
+        var _dom = arguments[0];
+        _dom.parentNode.setAttribute("style", "display: none;");
+        imgIndex--;
+        $('#spanNum').html(imgIndex);
+    }
+
+    function chek_Sign() {
+        var dom = arguments[0];
+        dom.setAttribute("class", "weui_flex_item left");
+
+        if (arguments[1] == 1) {
+            document.getElementById("sel_right").setAttribute("class", "weui_flex_item");
+            para.signtype = '正常签收';
+        } else {
+            document.getElementById("sel_left").setAttribute("class", "weui_flex_item ");
+            para.signtype = '异常签收';
+        }
+    }
+</script>

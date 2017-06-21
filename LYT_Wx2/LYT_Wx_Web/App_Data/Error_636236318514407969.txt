@@ -1,0 +1,12 @@
+ExecptionMessage:未将对象引用设置到对象的实例。
+LYT.WeChat.Core
+   在 WX.WeChat.Core.CustomMessageHandler.CustomMessageHandler.OnExecuted() 位置 f:\1WorkFile\LYT_Wx\LYT.WeChat.Core\CustomMessageHandler\CustomMessageHandler.cs:行号 71
+   在 Senparc.Weixin.MP.MessageHandlers.MessageHandler`1.Execute()
+   在 LYT_Wx_Web.Controllers.WeiXin.WeiXinAPIController.Post(PostModel postModel) 位置 f:\1WorkFile\LYT_Wx\LYT_Wx_Web\Controllers\WeiXinAPIController.cs:行号 90
+<xml>
+  <ToUserName><![CDATA[oKUJKwoo-RwoiRlf9L-8mErnpkgc]]></ToUserName>
+  <FromUserName><![CDATA[gh_72ff7b742921]]></FromUserName>
+  <CreateTime>1488005044</CreateTime>
+  <MsgType><![CDATA[text]]></MsgType>
+  <Content><![CDATA[欢迎您关注]]></Content>
+</xml>

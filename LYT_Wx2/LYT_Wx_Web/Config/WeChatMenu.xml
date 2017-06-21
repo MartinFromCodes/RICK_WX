@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--
+button>flag=true代表只有一级菜单，没有子菜单
+url>tag=1代表需要OAuth认证,tag=2代表不需要OAuth认证，tag=3代表外部链接
+  -->
+<menu>
+  <button flag="true">
+    <type>view</type>
+    <name>运单签收</name>
+    <url tag="1">Home/Index</url>
+  </button>
+  <button flag="true">
+    <type>view</type>
+    <name>派送异常</name>
+    <url tag="1">Home/SendExecption</url>
+  </button>
+  <button flag="true">
+    <type>view</type>
+    <name>帐号解绑</name>
+    <url tag="1">Home/UnBing</url>
+  </button>
+</menu>

@@ -1,0 +1,75 @@
+﻿
+<script src="http://res.wx.qq.com/open/js/jweixin-1.1.0.js"></script>
+@{
+    if (ViewBag.JSSDKPackage != null)
+    {
+        var JSModel = ViewBag.JSSDKPackage as Senparc.Weixin.MP.Helpers.JsSdkUiPackage;       
+            <script>
+                wx.config({
+                    debug: false,
+                    appId: '@JSModel.AppId',
+                    timestamp: '@JSModel.Timestamp',
+                    nonceStr: '@JSModel.NonceStr',
+                    signature: '@JSModel.Signature',
+                    jsApiList: ['checkJsApi', 'closeWindow', 'hideOptionMenu', 'openAddress', 'onMenuShareTimeline', 'onMenuShareAppMessage', 'openLocation', 'getLocation', 'scanQRCode', 'chooseImage', 'uploadImage']
+                });
+                wx.ready(function () {
+                   
+                    var UrlExtList = ["productdetail", "producttuandetail", "detail"];
+                    var IsShare=false;
+                    for (var k in UrlExtList) {
+                        if (location.href.indexOf(UrlExtList[k]) > -1) {
+                            IsShare = true;
+                            break;
+                        }
+                    }
+                    if (IsShare) {
+                        var img = document.getElementById("ImUrlID").src;
+                        wx.onMenuShareTimeline({
+                            title:  document.title, // 分享标题
+                            link: location.origin + "/Shop/detail?oid=@ViewData["M_Oid"]", // 分享链接
+                            imgUrl: img, // 分享图标
+                            success: function () {
+                               
+                            },
+                            cancel: function () {
+                                
+                            }
+                        });
+                        wx.onMenuShareAppMessage({
+                            title: document.title, // 分享标题
+                            desc: document.title, // 分享描述
+                            link: location.origin + "/Shop/detail?oid=@ViewData["M_Oid"]", // 分享链接
+                            imgUrl: img, // 分享图标
+                            type: '', 
+                            dataUrl: '',
+                            success: function () {
+                               
+                            },
+                            cancel: function () {
+                               
+                            }
+                        });
+                    } else {
+                        wx.hideOptionMenu();
+                    }
+                    wx.checkJsApi({
+                        jsApiList: [
+                            'getLocation'
+                        ],
+                        success: function (res) {
+                           
+                             //alert(JSON.stringify(res));
+                            // alert(JSON.stringify(res.checkResult.getLocation));
+                            if (res.checkResult.getLocation == false) {
+                                alert('你的微信版本太低，不支持微信JS接口，请升级到最新的微信版本！');
+                                return;
+                            }  
+                        }
+                    });
+                });
+                wx.error(function (res) {
+                });
+            </script>
+    }
+}

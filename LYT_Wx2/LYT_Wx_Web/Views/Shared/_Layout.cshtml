@@ -1,0 +1,19 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta name="format-detection" content="telephone=no" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta http-equiv="Access-Control-Allow-Origin" content="*">
+    <title>@ViewBag.Title</title>
+    <link href="~/Content/Style.css" rel="stylesheet" />
+    <link href="~/Content/iconfont.css" rel="stylesheet" />
+  
+    <script>var UserToken='@ViewBag.M_OpenId'</script>
+    @Html.Partial("_WxJsSdk")
+</head>
+<body>
+    @RenderBody()
+</body>
+</html>
+ 

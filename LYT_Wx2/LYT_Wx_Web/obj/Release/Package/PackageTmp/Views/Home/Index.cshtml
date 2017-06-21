@@ -1,0 +1,128 @@
+﻿
+<div class="user_login">
+    <ul class="login_form">
+        <li><span>姓名</span><input type="text" name="name" id="username" value="李浩" /></li>
+        <li><span>帐号</span><input type="text" name="id" id="usercode" value="wlmqyh" /></li>
+        <li><span>密码</span><input type="password" name="password" id="password" /></li>
+        <li><input type="button" name="login" class="btn_login" value="登录" onclick="GetDit()" /></li>
+    </ul>
+
+</div>
+
+<script src="~/Scripts/comm.js"></script>
+<script src="~/Scripts/jquery-1.8.2.min.js"></script>
+<script>
+    var para = {
+        userCode: '',
+        password: '',
+        username: '',
+        openid: ''
+    };
+   
+    CheckLogin();
+
+    function GetDit() {
+
+            para.userCode = document.getElementById("usercode").value;
+            para.password = document.getElementById("password").value;
+            para.username = document.getElementById("username").value;
+            para.openid = UserToken;
+
+        $.ajax({
+            type: 'POST',
+            url: Net_url + '/openapi/createDigest',
+            data: { appKey: '654321',Params:JSON.stringify(para) },
+            dataType: 'text',
+            success: function (data, textStatus) {
+                if (data.length > 0) {
+                    Login(data);
+                }
+            },
+            error: function (xmlHttpRequest, textStatus, errorThrown) {
+                Message.Box("\u7f51\u7edc\u9519\u8bef：" + xmlHttpRequest.status);
+            }
+        });
+    }
+
+    function Login() {
+        var dig = arguments[0];
+        var _Url = Net_url + "/openapi/guanglianPdaApi";
+
+        var postData = {
+            command: 'LOGINWECHATUSER',
+            Params: JSON.stringify(para),
+            digest: dig,
+            Timestamp: new Date().ToString("yyyy.MM.dd HH:mm:ss")
+        };
+
+
+        if (String(para.username).isNullOrEmpty()) {
+            Message.Box("姓名不能为空!");
+            return;
+        } else if (String(para.userCode).isNullOrEmpty()) {
+            Message.Box("帐号不能为空!");
+            return;
+        }
+        else if (String(para.password).isNullOrEmpty()) {
+            Message.Box("密码不能为空!");
+            return;
+        }
+
+
+        AJAXData(_Url, postData,
+         function (data) { 
+             if (data.error_code == 0) {
+                 Message.Box("登录成功", function () {
+                     Redirect('/Home/Sign');
+                     Redirect()
+                 });
+                 
+             } else if (data.error_code == 10001) {
+                 Message.Box(data.error_msg+"提交失败!");
+             }
+         });
+        
+    }
+
+    
+    function CheckLogin() {
+        var _digtData = { openid: UserToken }
+        $.ajax({
+            type: 'POST',
+            url: Net_url + '/openapi/createDigest',
+            data: { appKey: '654321', Params: JSON.stringify(_digtData) },
+            dataType: 'text',
+            success: function (data, textStatus) {
+                if (data.length > 0) {
+                    ReditSign(data, _digtData);
+                }
+            },
+            error: function (xmlHttpRequest, textStatus, errorThrown) {
+                Message.Box("\u7f51\u7edc\u9519\u8bef：" + xmlHttpRequest.status);
+            }
+        });
+    }
+    function ReditSign()
+    {
+        var _digest = arguments[0];
+        var _Url = Net_url + "/openapi/guanglianPdaApi";
+
+        var _postData={
+            command: 'WXAGENTUSERINFO',
+            Params: JSON.stringify(arguments[1]),
+            digest: _digest,
+            Timestamp: new Date().ToString("yyyy.MM.dd HH:mm:ss")
+        }
+
+        AJAXData(_Url, _postData,
+        function (data) {
+            if (data.error_code == 0) {
+                Redirect('/Home/Sign'); 
+            } else if (data.error_code == 10001) {
+                Message.Remove();
+                return;
+            }
+        });
+    }
+
+</script>

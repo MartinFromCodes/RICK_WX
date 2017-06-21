@@ -1,0 +1,152 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+    <html>
+    <head>
+        <meta name="viewport" content="width=device-width" />
+        <title></title>
+        <script src="~/Scripts/comm.js"></script>
+        <script src="~/Scripts/jquery-1.8.2.min.js"></script>
+    </head>
+    <body>
+        <form id="frm">
+            <div id="box2" style="margin:0px auto; width:100%; min-height:150px; background:#FF9">
+                <input type="file" name="file1" id="file1" />
+                <input type="button" value="上传" id="upload">
+            </div>
+        </form>
+        <script>
+            $("#upload").click(function () {
+                 var url = "http://172.16.4.196:8080/openapi/fileUpload";
+
+                var formData = new FormData($("#frm")[0]);
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: formData,
+                    async: false,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    success: function (returndata) {
+                        var jsonObj = eval('(' + returndata + ')'); 
+                        //alert(jsonObj.f);
+                        //$("#idCardFront").val(jsonObj.f);
+                        //$("#idCardBack").val(jsonObj.b); 
+                    },
+                    error: function (returndata) {
+                        alert(returndata);
+                    }
+                });
+            });
+        </script>
+    </body>
+    </html>
+
+
+@*<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 5.0 Transitional//EN">
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="author" content="oscar999">
+    <title></title>
+    <script src="~/Scripts/jquery-1.8.2.min.js"></script>
+    <script>
+
+        /**
+         * Receives an Image Object (can be JPG OR PNG) and returns a new Image Object compressed
+         *  param {Image} source_img_obj The source Image Object
+	 *  param {Integer} quality The output quality of Image Object
+	 *  return {Image} result_image_obj The compressed Image Object
+	 **/
+        function compress(source_img_obj, quality, output_format){
+            //alert('aa');
+            var mime_type = "image/jpeg";
+            if(output_format!=undefined && output_format=="png"){
+                mime_type = "image/png";
+            }
+
+            var cvs = document.createElement('canvas');
+            //naturalWidth真实图片的宽度
+            cvs.width = source_img_obj.naturalWidth;
+            cvs.height = source_img_obj.naturalHeight;
+
+            var ctx = cvs.getContext("2d").drawImage(source_img_obj, 0, 0);
+            var newImageData = cvs.toDataURL(mime_type, quality/100);
+            var result_image_obj = new Image();
+            result_image_obj.src = newImageData;
+            return result_image_obj;
+        };
+
+        function  handleFiles(files){
+            if(files.length){
+                var divObj=document.createElement("div");
+                divObj.contentEditable = true;//使DIV可编辑
+                divObj.style.border="100px";
+
+                var file = files[0];
+                var imageId = file.name;
+                divObj.innerHTML="<image src='' id=" + imageId + " alt='picture'><br>";
+                var imageList = document.getElementById("imageList");
+                imageList.appendChild(divObj);
+
+                var divLine=document.createElement("div");
+                divLine.innerHTML="<hr>";
+                imageList.appendChild(divLine);
+
+                //alert(file.name);
+                var reader = new FileReader();
+                reader.onload = function(){
+                    var i = document.getElementById(imageId);
+                    i.src = this.result;
+                    var quality = 20;
+                    i.src = compress(i,quality).src;
+                    i.width="220";
+                    i.height='180';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function uploadFiles(){
+            var images = document.getElementsByTagName("img");
+           // var url = "http://172.16.4.250:801/openapi/fileUpload";
+            var url = "http://172.16.4.196:8080/openapi/fileUpload";
+            
+            /*if (typeof(images) == "undefined") {
+                alert("please select picture");
+                return;
+            }*/
+            var num = images.length;
+            if(num < 1){
+                alert("please select picture");
+                return;
+            }
+            for(var i=0;i<num;i++){
+                
+                var xhr = new XMLHttpRequest();
+                //var formData = new FormData(document.getElementById('upload_form'));
+                var formData = new FormData($("#upload_form")[0]);
+                //fromData.append("base64", images[i].src);
+                //xhr.open("post",url, true);
+                xhr.open("POST",url);
+                xhr.send(formData);
+            }
+        }
+    </script>
+
+</head>
+<body>
+    <form id="upload_form" >
+        <input type="file" id="file" onchange="handleFiles(this.files)" />
+        <input type="button" id="upload" value="upload" onclick="uploadFiles()" />
+    </form>
+    <div><hr></div>
+    <div id="filecontent"></div>
+
+    <div id='imageList'></div>
+</body>
+</html>*@ 

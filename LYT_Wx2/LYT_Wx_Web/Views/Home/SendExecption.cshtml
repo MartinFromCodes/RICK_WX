@@ -1,0 +1,207 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<link rel="stylesheet" href="~/Content/weui.css" />
+
+<div class="weui_cells_title">派送异常登记</div>
+
+<div class="sendexec wrap ">
+    <ul class="list  mt">
+        <li>
+            <label>运&nbsp;&nbsp;单&nbsp;&nbsp;号:</label>
+            <input type="text" id="barCode" class="waybill" pattern="[0-9]*" placeholder="运单号" name="waylino" />
+            <input type="button" onclick="saoyisaoLYT()" class="btn_scan" value="扫 描" />
+        </li>
+        <li class="ex_type">
+            <label class="ex_lable">异常类型:</label>
+            <select id="exce_type" onchange="GetCause()"></select>
+        </li>
+        <li class="ex_type">
+            <label>异常原因:</label>
+            <select id="ex_cause"><option></option>
+            </select>
+        </li>
+
+    </ul>
+    <div class="imgw details_info">
+        <label>异常描述:</label>
+        <textarea id="depict" rows="3" placeholder="异常描述信息"></textarea>
+    </div>
+
+    <footer>
+        <div class="fixed">
+            <button class="btn_left" onclick="SendExce()">确认</button>
+            <button class="btn-right" onclick="black()">返回</button>
+        </div>
+    </footer>
+</div>
+<script src="~/Scripts/comm.js"></script>
+<script src="~/Scripts/jquery-1.8.2.min.js"></script>
+<script>
+    var para = {
+        openid:'',
+        waybillno: '',
+        exceptype: '',
+        excepcause: '',
+        excepdepict: ''
+    };
+    var List = undefined;
+    GetExceTypes();
+    var exce_type = undefined;
+
+    //提交异常信息
+    function SendExce() {
+        exce_type = document.getElementById("exce_type");
+        var exce_cause=document.getElementById("ex_cause");
+        para.openid = UserToken;
+        para.waybillno = document.getElementById("barCode").value;
+        para.exceptype = exce_type.options[exce_type.selectedIndex].text;
+        para.excepcause = exce_cause.options[exce_cause.selectedIndex].text;
+        para.excepdepict = document.getElementById("depict").value;
+        
+        if (String(para.waybillno).isNullOrEmpty()) {
+            Message.Box("运单号不能为空!");
+            return;
+        } 
+        else if (String(para.exceptype).isNullOrEmpty()) {
+            Message.Box("请选择异常类型!");
+            return;
+        }
+        else if (String(para.excepcause).isNullOrEmpty()) {
+            Message.Box("请选择异常原因!");
+            return;
+        }
+        else if (String(para.excepdepict).isNullOrEmpty()) {
+            Message.Box("异常描述不能为空!");
+            return;
+        }
+        else if (para.excepdepict.length > 100) {
+            Message.Box("异常描述在100字以内!!");
+            return;
+        } else {
+
+            //判断无误加密参数
+            $.ajax({
+                type: 'POST',
+                url: Net_url + '/openapi/createDigest',
+                data: { appKey: '654321', Params: JSON.stringify(para) },
+                dataType: 'text',
+                success: function (data, textStatus) {
+                    if (data.length > 0) {
+                        SubmitData(data); //调用提交数据方法
+                    }
+                },
+                error: function (xmlHttpRequest, textStatus, errorThrown) {
+                    Message.Box("\u7f51\u7edc\u9519\u8bef：" + xmlHttpRequest.status);
+                }
+            });
+        }
+         
+    }
+     
+    
+    //提交数据到接口
+    function SubmitData() {
+        var dig = arguments[0];
+        var _Url = Net_url + "/openapi/guanglianPdaApi";
+        var postData = {
+            command: 'WXSENDEXCEPTION',
+            Params: JSON.stringify(para),
+            digest: dig,
+            Timestamp: new Date().ToString("yyyy.MM.dd HH:mm:ss")
+        };
+
+        Message.Loading();
+        AJAXData(_Url, postData,
+       function (data) {
+           if (data.error_code == 0) {
+               Message.Remove();
+               if (data.result!="") {
+                   Message.Box(data.result); 
+               } else { 
+                   Message.Box("异常登记成功");
+                   location.reload()
+               }
+
+              
+             
+
+           } else if (data.error_code == 10001) {
+               Message.Box(data.error_msg + "提交失败!");
+           }
+       });
+    }
+
+
+
+    //返回按钮
+    function black() {
+        WeixinJSBridge.call('closeWindow');
+    }
+
+
+    function GetExceTypes() {
+        $.ajax({
+            type: 'GET',
+            url: Net_url + "/openapi/getWxExceptType",
+            dataType: 'json',
+            success: function (data, textStatus) {
+                var _dom = document.getElementById("exce_type");
+                _dom.innerHTML = "";
+                if (data.info != null) {
+                    List = data.info;
+                    for (var i in List) {
+                        var Html = "";
+                        if (i == 0) {
+                            Html += "<option></option>";
+                        }
+                        Html += "<option value=" + List[i].ITEM_EXCETYPE + ">" + List[i].ITEM_EXCETYPE + "</option>"
+                        var _tempNodeList = Html.CreateHtml();
+                        while (_tempNodeList.length > 0) {
+                            _dom.appendChild(_tempNodeList[0]);
+                        }
+                    }
+                }
+            },
+            error: function (xmlHttpRequest, textStatus, errorThrown) {
+                Message.Box("\u7f51\u7edc\u9519\u8bef：" + xmlHttpRequest.status);
+            }
+        });
+    }
+
+    function GetCause() {
+        exce_type = document.getElementById("exce_type");
+
+        var _dom = document.getElementById("ex_cause");
+        _dom.innerHTML = "";
+       
+        var sel_type = exce_type.options[document.getElementById("exce_type").selectedIndex].value;
+        for (var i in List) {
+            if (List[i].ITEM_EXCETYPE == sel_type) {
+                var Html = "<option></option>";
+                for (var j in List[i].detail) { 
+                    Html += "<option value=" + List[i].detail[j] + ">" + List[i].detail[j] + "</option>" 
+                }
+                var _tempNodeList = Html.CreateHtml();
+                while (_tempNodeList.length > 0) {
+                    _dom.appendChild(_tempNodeList[0]);
+                }
+            }  
+        }
+    }
+    //扫一扫
+    function saoyisaoLYT() {
+        wx.scanQRCode({
+            needResult: 1, // 默认为0，扫描结果由微信处理，1则直接返回扫描结果，
+            scanType: ["barCode"], // 可以指定扫二维码还是一维码，默认二者都有
+            success: function (res) {
+                var result = res.resultStr.split(',')[1]; // 当needResult 为 1 时，扫码返回的结果
+
+                $('#barCode').val(result.substring(0, 9));
+            }
+        });
+
+    }
+
+
+</script>
