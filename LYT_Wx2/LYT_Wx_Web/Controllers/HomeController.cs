@@ -57,5 +57,9 @@ namespace LYT_Wx_Web.Controllers
             return View();
         }
 
+        public System.Web.Mvc.JsonResult TestJson()
+        {
+            return new System.Web.Mvc.JsonResult();
+        }
     }
 }
